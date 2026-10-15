@@ -1,0 +1,11 @@
+{
+  "name": "Keyboard WASD",
+  "output": "keyboard",
+  "map": {
+    "steer": { "target": "A|D", "deadzone": 0.1 },
+    "gas":   { "target": "W" },
+    "brake": { "target": "S" },
+    "up":    { "target": "E" },
+    "down":  { "target": "Q" }
+  }
+}

@@ -9,3 +9,5 @@ dist/
 .gradle/
 local.properties
 .idea/
+
+*.private.md

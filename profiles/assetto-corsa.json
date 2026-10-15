@@ -1,0 +1,11 @@
+{
+  "name": "Assetto Corsa",
+  "output": "xbox360",
+  "map": {
+    "steer": { "target": "LX", "deadzone": 0.02, "gamma": 1.0 },
+    "gas":   { "target": "RT" },
+    "brake": { "target": "LT" },
+    "up":    { "target": "RB" },
+    "down":  { "target": "LB" }
+  }
+}
