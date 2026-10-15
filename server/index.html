@@ -1,0 +1,54 @@
+<!DOCTYPE html><meta name="viewport" content="width=device-width,user-scalable=no">
+<style>
+body{margin:0;background:#111;color:#fff;font-family:sans-serif;user-select:none;touch-action:none}
+.b{position:fixed;display:flex;align-items:center;justify-content:center;font-size:28px;border-radius:20px}
+#brake{left:2%;bottom:5%;width:22%;height:55%;background:#c33}
+#gas{right:2%;bottom:5%;width:22%;height:75%;background:#3a3}
+#dn{left:28%;top:5%;width:20%;height:40%;background:#36c}
+#up{right:28%;top:5%;width:20%;height:40%;background:#36c}
+#cal{left:42%;bottom:5%;width:16%;height:20%;background:#555}
+#st{position:fixed;top:2%;left:50%;transform:translateX(-50%)}
+#start{position:fixed;inset:0;background:#000;font-size:40px;z-index:9}
+</style>
+<button id="start">TAP TO START</button>
+<div id="st">...</div>
+<div class="b" id="brake">BRAKE</div><div class="b" id="gas">GAS</div>
+<div class="b" id="dn">DOWN</div><div class="b" id="up">UP</div>
+<div class="b" id="cal">CENTER</div>
+<script>
+const INVERT = 1;        // set to -1 if steering is reversed
+const RANGE = 40;        // degrees of tilt for full lock
+let ws, raw = 0, center = 0, s = {t:0,b:0,u:false,d:false};
+
+function connect(){
+  ws = new WebSocket(`wss://${location.host}/ws`);
+  ws.onopen = () => st.textContent = "connected";
+  ws.onclose = () => { st.textContent = "reconnecting..."; setTimeout(connect, 500); };
+}
+
+function hold(id, key, val=true){
+  const e = document.getElementById(id);
+  const on = x => { x.preventDefault(); s[key] = val === true ? true : 1; };
+  const off = x => { x.preventDefault(); s[key] = val === true ? false : 0; };
+  e.addEventListener("touchstart", on); e.addEventListener("touchend", off); e.addEventListener("touchcancel", off);
+}
+hold("gas","t",1); hold("brake","b",1); hold("up","u"); hold("dn","d");
+cal.addEventListener("touchstart", () => center = raw);
+
+start.onclick = async () => {
+  if (DeviceOrientationEvent.requestPermission) await DeviceOrientationEvent.requestPermission();
+  try { await navigator.wakeLock.request("screen"); } catch {}
+  try { await document.documentElement.requestFullscreen(); await screen.orientation.lock("landscape"); } catch {}
+  start.remove(); connect();
+  addEventListener("deviceorientation", e => {
+    const a = screen.orientation ? screen.orientation.angle : 90;
+    raw = a === 90 ? -e.beta : (a === 270 ? e.beta : e.gamma);
+  });
+  setInterval(() => {
+    if (ws.readyState !== 1) return;
+    let v = (raw - center) * INVERT / RANGE;
+    if (Math.abs(v) < 0.02) v = 0;
+    ws.send(JSON.stringify({s: Math.max(-1, Math.min(1, v)), ...s}));
+  }, 16);
+};
+</script>

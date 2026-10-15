@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pem
+*.key
+build/
+dist/
+*.spec
+*.apk
+.gradle/
+local.properties
+.idea/
